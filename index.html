@@ -394,6 +394,12 @@ textarea.nta::placeholder{color:var(--s3)}
       <div id="auth-status" class="auth-status"></div>
       <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--m)"><a href="#" onclick="doResetPassword();return false" style="color:var(--ac)">Forgot password?</a></div>
     </div>
+    <!-- Guest mode -->
+    <div style="margin-top:16px;text-align:center;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--m);font-size:12px"><div style="flex:1;height:1px;background:var(--s3)"></div>or<div style="flex:1;height:1px;background:var(--s3)"></div></div>
+      <button class="btn btn-o" style="width:100%;justify-content:center;" onclick="loginGuest()">👤 Continue as Guest</button>
+      <div style="font-size:11px;color:var(--m);margin-top:7px;">Browse all lessons — progress won't be saved</div>
+    </div>
     <!-- Offline fallback (when Firebase not configured) -->
     <div id="offline-form" style="display:none">
       <div class="fg"><label class="fl">Your Name</label><input class="fi" id="nu-name" placeholder="e.g. James Williams" onkeydown="if(event.key==='Enter')createOfflineUser()"></div>
@@ -1052,6 +1058,10 @@ async function doAuth(){
  }
 }
 
+function loginGuest(){
+ loginUser({id:'guest',name:'Guest',email:'',role:'guest'});
+}
+
 async function doResetPassword(){
  const email=document.getElementById('auth-email').value.trim();
  if(!email){setAuthStatus('Enter your email above first.','var(--wn)');return;}
@@ -1162,7 +1172,7 @@ function updateUserChip(){
     <div class="sb-uav">${initials(CU.name)}</div>
     <div style="flex:1;text-align:left">
      <div class="sb-uname">${CU.name}</div>
-     <div class="sb-uswitch">${CU.role==='admin'?'🛡️ Admin · ':CU.role==='trainer'?'👩‍🏫 Trainer · ':CU.role==='lead'?'⭐ Lead · ':'🎓 Volunteer · '}Tap to sign out</div>
+     <div class="sb-uswitch">${CU.role==='admin'?'🛡️ Admin · ':CU.role==='trainer'?'👩‍🏫 Trainer · ':CU.role==='lead'?'⭐ Lead · ':CU.role==='guest'?'👤 Guest · ':'🎓 Volunteer · '}${CU.role==='guest'?'Tap to sign in':'Tap to sign out'}</div>
     </div>
    </button>
   </div>`;
@@ -1183,18 +1193,18 @@ function gS(){if(!CU)return{};return getS_u(CU.id)}
 
 // Write to localStorage immediately, then sync to Firestore
 function sP(d){
- if(!CU)return;
+ if(!CU||CU.role==='guest')return;
  localStorage.setItem('x32p_'+CU.id,JSON.stringify(d));
  syncProgress();
 }
 function sN(id,t){
- if(!CU)return;
+ if(!CU||CU.role==='guest')return;
  const n=gN();n[id]=t;
  localStorage.setItem('x32n_'+CU.id,JSON.stringify(n));
  syncProgress();
 }
 function svS(id,sc,tot){
- if(!CU)return;
+ if(!CU||CU.role==='guest')return;
  const s=gS();s[id]={sc,tot,pct:Math.round(sc/tot*100)};
  localStorage.setItem('x32s_'+CU.id,JSON.stringify(s));
  syncProgress();
